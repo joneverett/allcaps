@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ALL CAPS - memorize capitals of the world!</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  <script src="js/ammap.js"></script>
+  <script src="js/nb.js"></script>
+  <script src="js/worldLow.js"></script>
+  <script src="js/light.js"></script>
+  <script src="js/difflib.js"></script>
+  <script src="js/removeDiacritics.js"></script>
+  <script src="js/capitalsLow.js"></script>
+  <script src="js/progressbar.js"></script>
+  <script src="js/allcaps.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/ammap.css">
+  <link rel="stylesheet" href="css/allcaps.css">
+  <link rel="shortcut icon" href="icon.png" />
+</head>
+<body>
+  <span id="lang_flags"><span class="flag-icon flag-icon-no"></span>&nbsp;<span class="flag-icon flag-icon-gb"></span></span>
+  <div class="row">
+    <div class="page-header">
+      <h1>ALL <span class="glyphicon glyphicon-globe text-primary" aria-hidden="true"></span> CAPS</h1>
+    </div>
+  </div>
+  <div class="row" id="intro_row">
+    <button class="btn btn-success" id="start_btn">
+      <span class="glyphicon glyphicon-play" aria-hidden="true"></span> Memorize!</button>
+  </div>
+  </div>
+  <div class="row" id="form_row">
+    <div class="col-md-7 col-md-offset-2 col-xs-7 col-xs-offset-1">
+    <form action="" class="form-horizontal">
+      <div lang="nb" class="gameform" id="gameform">
+        <div class="form-group has-feedback">
+          <label class="control-label" for="input_field_nb">
+            <span id="form_label_nb"></span>
+          </label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="input_field_nb">
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="button"></button>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div lang="en" class="gameform" id="gameform">
+        <div class="form-group has-feedback">
+          <label class="control-label" for="input_field_en">
+            <span id="form_label_en"></span>
+          </label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="input_field_en">
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="button"></button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    </form>
+    <div class="col-md-1 col-xs-2">
+      <table><tr>
+      <td><div class="progbar" id="progress"></div></td><td>&emsp;</td>
+      <td><div class="progbar" id="countdown"></div></td>
+      </tr></table>
+    </div>
+  </div>
+  <div class="row">
+    <div id="mapdiv"></div>
+  </div>
+</body>
+</html>
