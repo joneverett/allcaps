@@ -14,7 +14,7 @@ as the name is changed.
  0. You just DO WHAT THE FUCK YOU WANT TO.
 ***/
 // CONFIG
-var AUTOZOOM = true;
+var AUTOZOOM = false;
 var GAME_MINUTES = 4;
 var ANIMATION_DURATION = 4;
 var LANGUAGE = "nb";  // nb | en
@@ -52,13 +52,15 @@ var worldDataProvider = {
 var map = AmCharts.makeChart("mapdiv", {
     type: "map",
     theme: "light",
+    projection: "miller",
     dataProvider: worldDataProvider,
     areasSettings: {
         autoZoom: AUTOZOOM
     },
     zoomControl: {
         minZoomLevel: 1,
-        maxZoomLevel: 10
+        maxZoomLevel: 10,
+        top: 80
     },
     zoomDuration: ANIMATION_DURATION
 });
@@ -184,15 +186,17 @@ function prepare_answer() {
 
 function set_mode_intro() {
     game_mode = 0;
-    $("#intro_row").show();
-    $("#form_row").hide();
+    $("#intro_col").show();
+    $("#form_col").hide();
+    $("#prog_col").hide();
 }
 
 function set_mode_in() {
     set_language(LANGUAGE)  // for unknown reason this breaks the other language form button if called too early..
     game_mode = 1;
-    $("#form_row").show();
-    $("#intro_row").hide();
+    $("#form_col").show();
+    $("#prog_col").show();
+    $("#intro_col").hide();
     var msg = "<span class=\"glyphicon glyphicon-step-forward\" aria-hidden=\"true\"></span>";
     $(".btn-primary").html(msg);
     $("input").val("");
