@@ -16,7 +16,7 @@ as the name is changed.
 // CONFIG
 var AUTOZOOM = false;
 var GAME_MINUTES = 4;
-var ANIMATION_DURATION = 4;
+var ANIMATION_DURATION = 3;
 var LANGUAGE = "nb";  // nb | en
 var IGNORE_DIACRITICS = true;
 
@@ -52,7 +52,7 @@ var worldDataProvider = {
 var map = AmCharts.makeChart("mapdiv", {
     type: "map",
     theme: "light",
-    projection: "miller",
+    projection: "eckert3",
     dataProvider: worldDataProvider,
     areasSettings: {
         autoZoom: AUTOZOOM
@@ -91,13 +91,13 @@ function set_language(lang) {
         $(":lang(en)").hide();
         map.language = lang;
     } else if (lang === "en") {
-         $(":lang(en)").show();
-         $(":lang(nb)").hide();
-         map.language = null;
+        $(":lang(en)").show();
+        $(":lang(nb)").hide();
+        map.language = null;
     }
-   var selected = map.selectedObject;
-   map.validateData();
-   map.selectObject(selected);
+    var selected = map.selectedObject;
+    map.validateData();
+    map.selectObject(selected);
 }
 
 function stop_timer() {
@@ -173,12 +173,12 @@ function clear_labels_lines() {
 
 function prepare_answer() {
     var game = gameset[successes];
-    var msg_nb = "Hovedstaden i " + game.country["nb"];
-    var msg_en = "The capital of " + game.country["en"];
+    var msg_nb = "Hovedstaden i " + game.country.nb;
+    var msg_en = "The capital of " + game.country.en;
     $("#form_label_nb").html(msg_nb);
     $("#form_label_en").html(msg_en);
     $("input").attr("placeholder", game.rule);
-    $("input:visible").focus()
+    $("input:visible").focus();
     plane_image.animateTo(game.longitude, game.latitude, ANIMATION_DURATION);
     var country = map.getObjectById(game.id);
     map.selectObject(country);
@@ -192,7 +192,7 @@ function set_mode_intro() {
 }
 
 function set_mode_in() {
-    set_language(LANGUAGE)  // for unknown reason this breaks the other language form button if called too early..
+    set_language(LANGUAGE);  // for unknown reason this breaks the other language form button if called too early..
     game_mode = 1;
     $("#form_col").show();
     $("#prog_col").show();
@@ -203,7 +203,7 @@ function set_mode_in() {
     $("input").prop('disabled', false);
     $("#input_field_nb").attr("placeholder", "Lag huskeregel");
     $("#input_field_en").attr("placeholder", "Create rule of thumb");
-    $("input:visible").focus()
+    $("input:visible").focus();
     $(".has-feedback").removeClass("has-success");
     $(".has-feedback").removeClass("has-error");
 
@@ -249,7 +249,7 @@ function set_mode_end(successful) {
     } else {
         $(".has-feedback").addClass("has-error");
     }
-    $("button:visible").focus()
+    $("button:visible").focus();
 }
 
 function set_correct_answer(game) {
@@ -274,7 +274,7 @@ function set_correct_answer(game) {
     set_progbar();
 
     if (is_game_completed()) {
-        set_mode_end(true)
+        set_mode_end(true);
         var msg = "<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span>";
         var msg_nb = msg + " Memorert " + successes + " hovedsteder!";
         var msg_en = msg + " Memorized " + successes + " capitals!";
@@ -289,7 +289,7 @@ function check_answer() {
     var game = gameset[successes];
     var answer = game.capital[LANGUAGE];
     var entry = $("#input_field_nb").val() + $("#input_field_en").val();
-    
+
     var entry_san = entry.toLowerCase();
     var answer_san = answer.toLowerCase();
     if (IGNORE_DIACRITICS) {
@@ -303,8 +303,8 @@ function check_answer() {
     } else {
         set_mode_end(false);
         var msg = "<span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>";
-        var msg_nb = msg + " Hovedstaden i " + game.country["nb"] + "<i> er " + game.capital["nb"] + "</i>";
-        var msg_en = msg + " The capital of " + game.country["en"] + "<i> is " + game.capital["en"] + "</i>";
+        var msg_nb = msg + " Hovedstaden i " + game.country.nb + "<i> er " + game.capital.nb + "</i>";
+        var msg_en = msg + " The capital of " + game.country.en + "<i> is " + game.capital.en + "</i>";
         $("#form_label_nb").html(msg_nb);
         $("#form_label_en").html(msg_en);
     }
@@ -330,25 +330,33 @@ function clicked_end() {
 
 function goto_rand() {
     var capital = all_capitals.pop();
+    // TODO: Handle empty array.
     var country = map.getObjectById(capital.id);
     capital.svgPath = targetSVG;
     capital.label = capital.capital[LANGUAGE];
 
-    var label_nb = capital.capital["nb"] + " er hovedstad i " + capital.country["nb"];
-    var label_en = capital.capital["en"] + " is the capital of " + capital.country["en"];
+    var label_nb = capital.capital.nb + " er hovedstad i " + capital.country.nb;
+    var label_en = capital.capital.en + " is the capital of " + capital.country.en;
     $("#form_label_nb").html(label_nb);
     $("#form_label_en").html(label_en);
 
     map.dataProvider.images.push(capital);
     if (current_cap) {
         var line_id = "line" + gameset.length;
-        worldDataProvider.lines.push({
+        // worldDataProvider.lines.push({
+            // id: line_id,
+            // arc: -0.55,
+            // alpha: 0.8,
+            // latitudes: [current_cap.latitude, capital.latitude],
+            // longitudes: [current_cap.longitude, capital.longitude]
+        // });
+        worldDataProvider.lines = [{
             id: line_id,
             arc: -0.55,
             alpha: 0.8,
             latitudes: [current_cap.latitude, capital.latitude],
             longitudes: [current_cap.longitude, capital.longitude]
-        });
+        }];
         plane_image.animateAlongLine = true;
         plane_image.lineId = line_id;
     } else {
@@ -431,8 +439,8 @@ $(document).on("ready", function () {
         }
     });
     $("#countdown").bind("click", clicked_end);
-    $(".flag-icon-gb").click(function() {set_language("en");});
-    $(".flag-icon-no").click(function() {set_language("nb");});
+    $(".flag-icon-gb").click(function () {set_language("en");});
+    $(".flag-icon-no").click(function () {set_language("nb");});
 
     set_mode_intro();
 });
