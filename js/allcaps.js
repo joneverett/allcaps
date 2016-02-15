@@ -26,12 +26,14 @@ var planeSVG = "m2,106h28l24,30h72l-44,-133h35l80,132h98c21,0 21,34 0,34l-98,0 -
 
 var gameset;
 var successes;
+var progress;
 var all_capitals;
 var current_cap;
 var countdown_timer_id;
 var countdown_bar;
 var progress_bar;
 var game_mode;
+var bust_on_wrong;
 
 var plane_image = {
     svgPath: planeSVG,
@@ -128,7 +130,7 @@ function start_timer(minutes) {
 }
 
 function is_game_completed() {
-    if (successes === gameset.length) {
+    if (progress === gameset.length) {
         return true;
     }
     return false;
@@ -172,7 +174,7 @@ function clear_labels_lines() {
 }
 
 function prepare_answer() {
-    var game = gameset[successes];
+    var game = gameset[progress];
     var msg_nb = "Hovedstaden i " + game.country.nb;
     var msg_en = "The capital of " + game.country.en;
     $("#form_label_nb").html(msg_nb);
@@ -239,41 +241,17 @@ function set_mode_end(successful) {
     $("button:visible").focus();
 }
 
-function set_correct_answer(game) {
+function set_correct_answer() {
     $("input").val("");
     $(".has-feedback").toggleClass("has-success");
     setTimeout(function () {
         $(".has-feedback").toggleClass("has-success");
     }, 2000);
 
-    // set country color
-    var cnt = map.getObjectById(game.id);
-    cnt.color = "#5cb85c";  // success green
-    cnt.validate();
-
-    // set target image
-    var image_index = successes + 1; // not yet incremented (first item is planesvg)
-    var tgt = worldDataProvider.images[image_index];
-    // tgt.color = "#5cb85c";  // success green
-    tgt.label = game.capital[LANGUAGE];
-    tgt.validate();
-    successes += 1;
     set_progbar();
-
-    if (is_game_completed()) {
-        set_mode_end(true);
-        var msg = "<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span>";
-        var msg_nb = msg + " Memorert " + successes + " hovedsteder!";
-        var msg_en = msg + " Memorized " + successes + " capitals!";
-        $("#form_label_nb").html(msg_nb);
-        $("#form_label_en").html(msg_en);
-    } else {
-        prepare_answer();
-    }
 }
 
-function check_answer() {
-    var game = gameset[successes];
+function answer_accepted (game) {
     var answer = game.capital[LANGUAGE];
     var entry = $("#input_field_nb").val() + $("#input_field_en").val();
 
@@ -283,17 +261,59 @@ function check_answer() {
         entry_san = removeDiacritics(entry_san);
         answer_san = removeDiacritics(answer_san);
     }
-
     var score = new difflib.SequenceMatcher(answer_san, entry_san).ratio();
     if (score > 0.85) {
-        set_correct_answer(game);
+        return true;
+    }
+    return false;
+
+}
+
+function check_answer() {
+    var game = gameset[progress];
+
+    if (answer_accepted(game)) {
+        successes += 1;
+        progress += 1;
+        set_correct_answer();
+
+        // set country color
+        var cnt = map.getObjectById(game.id);
+        if (bust_on_wrong) {
+          cnt.color = "#5cb85c";  // success green
+        } else {
+          cnt.color = "#e0e0e0";  // background
+        }
+        cnt.validate();
     } else {
-        set_mode_end(false);
-        var msg = "<span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>";
-        var msg_nb = msg + " Hovedstaden i " + game.country.nb + "<i> er " + game.capital.nb + "</i>";
-        var msg_en = msg + " The capital of " + game.country.en + "<i> is " + game.capital.en + "</i>";
+        if (bust_on_wrong) {
+            set_mode_end(false);
+            var msg = "<span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>";
+            var msg_nb = msg + " Hovedstaden i " + game.country.nb + "<i> er " + game.capital.nb + "</i>";
+            var msg_en = msg + " The capital of " + game.country.en + "<i> is " + game.capital.en + "</i>";
+            $("#form_label_nb").html(msg_nb);
+            $("#form_label_en").html(msg_en);
+        } else {
+            $("input").val("");
+            $(".has-feedback").toggleClass("has-error");
+            setTimeout(function () {
+                $(".has-feedback").toggleClass("has-error");
+            }, 2000);
+            progress += 1;
+        }
+    }
+
+    if (game_mode === 3) {
+        return;
+    } else if (is_game_completed()) {
+        set_mode_end(true);
+        var msg = "<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span>";
+        var msg_nb = msg + " Memorert " + successes + " hovedsteder!";
+        var msg_en = msg + " Memorized " + successes + " capitals!";
         $("#form_label_nb").html(msg_nb);
         $("#form_label_en").html(msg_en);
+    } else {
+        prepare_answer();
     }
 }
 
@@ -355,10 +375,12 @@ function goto_rand() {
 }
 
 function start_exhaust() {
+    bust_on_wrong = false;
     all_capitals = capitals_low.slice(0);  // copy
     shuffleArray(all_capitals);
     gameset = all_capitals;
     successes = 0;
+    progress = 0;
     set_progbar();
 
     set_mode_in();
@@ -373,7 +395,9 @@ function start_compete() {
     // reset globals
     gameset = [];
     successes = 0;
+    progress = 0;
     current_cap = false;
+    bust_on_wrong = true;
     all_capitals = capitals_low.slice(0);  // copy
     shuffleArray(all_capitals);
     stop_timer();
