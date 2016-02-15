@@ -24,14 +24,14 @@ var IGNORE_DIACRITICS = true;
 var targetSVG = "M9,0C4.029,0,0,4.029,0,9s4.029,9,9,9s9-4.029,9-9S13.971,0,9,0z M9,15.93 c-3.83,0-6.93-3.1-6.93-6.93S5.17,2.07,9,2.07s6.93,3.1,6.93,6.93S12.83,15.93,9,15.93 M12.5,9c0,1.933-1.567,3.5-3.5,3.5S5.5,10.933,5.5,9S7.067,5.5,9,5.5 S12.5,7.067,12.5,9z";
 var planeSVG = "m2,106h28l24,30h72l-44,-133h35l80,132h98c21,0 21,34 0,34l-98,0 -80,134h-35l43,-133h-71l-24,30h-28l15,-47";
 
-var gameset = [];
-var successes = 0;
+var gameset;
+var successes;
 var all_capitals;
 var current_cap;
 var countdown_timer_id;
 var countdown_bar;
 var progress_bar;
-var game_mode = 0;
+var game_mode;
 
 var plane_image = {
     svgPath: planeSVG,
@@ -179,7 +179,7 @@ function prepare_answer() {
     $("#form_label_en").html(msg_en);
     $("input").attr("placeholder", game.rule);
     $("input:visible").focus();
-    plane_image.animateTo(game.longitude, game.latitude, ANIMATION_DURATION);
+    // plane_image.animateTo(game.longitude, game.latitude, ANIMATION_DURATION);
     var country = map.getObjectById(game.id);
     map.selectObject(country);
 }
@@ -207,19 +207,6 @@ function set_mode_in() {
     $(".has-feedback").removeClass("has-success");
     $(".has-feedback").removeClass("has-error");
 
-    // reset globals
-    gameset = [];
-    successes = 0;
-    current_cap = false;
-    all_capitals = capitals_low.slice(0);  // copy
-    shuffleArray(all_capitals);
-    stop_timer();
-    start_timer(GAME_MINUTES);
-    set_progbar();
-
-    map.dataProvider.lines = [];
-    map.dataProvider.images = [plane_image];
-    map.validateData();
 }
 
 function set_mode_out() {
@@ -343,13 +330,6 @@ function goto_rand() {
     map.dataProvider.images.push(capital);
     if (current_cap) {
         var line_id = "line" + gameset.length;
-        // worldDataProvider.lines.push({
-            // id: line_id,
-            // arc: -0.55,
-            // alpha: 0.8,
-            // latitudes: [current_cap.latitude, capital.latitude],
-            // longitudes: [current_cap.longitude, capital.longitude]
-        // });
         worldDataProvider.lines = [{
             id: line_id,
             arc: -0.55,
@@ -374,8 +354,36 @@ function goto_rand() {
     map.selectObject(country);
 }
 
-function start_game() {
+function start_exhaust() {
+    all_capitals = capitals_low.slice(0);  // copy
+    shuffleArray(all_capitals);
+    gameset = all_capitals;
+    successes = 0;
+    set_progbar();
+
     set_mode_in();
+    set_mode_out();
+
+    prepare_answer();
+}
+
+function start_compete() {
+    set_mode_in();
+
+    // reset globals
+    gameset = [];
+    successes = 0;
+    current_cap = false;
+    all_capitals = capitals_low.slice(0);  // copy
+    shuffleArray(all_capitals);
+    stop_timer();
+    start_timer(GAME_MINUTES);
+    set_progbar();
+
+    map.dataProvider.lines = [];
+    map.dataProvider.images = [plane_image];
+    map.validateData();
+
     goto_rand();
 }
 
@@ -386,13 +394,13 @@ function next_cap() {
 
 function form_btn_clicked() {
     if (game_mode === 0) {
-        start_game();
+        start_compete();
     } else if (game_mode === 1) {
         next_cap();
     } else if (game_mode === 2) {
         check_answer();
     } else if (game_mode === 3) {
-        start_game();
+        set_mode_intro();
     } else {
         console.log("invalid game mode: " + game_mode);
     }
@@ -401,7 +409,8 @@ function form_btn_clicked() {
 // initialize allcaps.html
 $(document).on("ready", function () {
     $("#compete_btn").focus();
-    $("#compete_btn").bind("click", form_btn_clicked);
+    $("#compete_btn").bind("click", start_compete);
+    $("#exhaust_btn").bind("click", start_exhaust);
     $(".btn-primary").bind("click", form_btn_clicked);
     $("input").keypress(function (e) {
         if (e.which === 13) {
