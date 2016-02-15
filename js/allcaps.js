@@ -400,14 +400,9 @@ function form_btn_clicked() {
 
 // initialize allcaps.html
 $(document).on("ready", function () {
-    $("#start_btn").focus();
-    $("#start_btn").bind("click", form_btn_clicked);
+    $("#compete_btn").focus();
+    $("#compete_btn").bind("click", form_btn_clicked);
     $(".btn-primary").bind("click", form_btn_clicked);
-    $("#start_btn").keypress(function (e) {
-        if (e.which === 13) {
-            form_btn_clicked();
-        }
-    });
     $("input").keypress(function (e) {
         if (e.which === 13) {
             form_btn_clicked();
