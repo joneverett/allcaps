@@ -18,10 +18,9 @@ body {
     z-index: -1;
 }
 .row {
-    padding: 5px;
+    min-height: 75px;
     margin-left: 0px;
     margin-right: 0px;
-    background-color: rgba(255, 255, 255, 0.7);
 }
 .progbar {
     margin-left: 20px;
