@@ -307,7 +307,7 @@ function check_answer() {
             }, 2000);
             failed.push(game);
             var msg = game.country[LANGUAGE] + ' - ' + game.capital[LANGUAGE];
-            $("#listdiv ul").append('<li>' + msg + '</li>');
+            $("#listdiv ul").prepend('<li>' + msg + '</li>');
 
             progress += 1;
         }
