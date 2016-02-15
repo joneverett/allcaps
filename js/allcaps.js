@@ -34,6 +34,7 @@ var countdown_bar;
 var progress_bar;
 var game_mode;
 var bust_on_wrong;
+var failed;
 
 var plane_image = {
     svgPath: planeSVG,
@@ -147,6 +148,9 @@ function set_progbar() {
     progress_bar.animate(successes / gameset.length, function () {
         progress_bar.setText(text);
     });
+    if (!bust_on_wrong) {
+        countdown_bar.setText(failed.length);
+    }
 }
 
 function add_gameset_rule() {
@@ -191,6 +195,10 @@ function set_mode_intro() {
     $("#intro_col").show();
     $("#form_col").hide();
     $("#prog_col").hide();
+
+    $("#listdiv ul").empty();
+    map.dataProvider.images = [];
+    map.validateData();
 }
 
 function set_mode_in() {
@@ -247,11 +255,9 @@ function set_correct_answer() {
     setTimeout(function () {
         $(".has-feedback").toggleClass("has-success");
     }, 2000);
-
-    set_progbar();
 }
 
-function answer_accepted (game) {
+function answer_accepted(game) {
     var answer = game.capital[LANGUAGE];
     var entry = $("#input_field_nb").val() + $("#input_field_en").val();
 
@@ -299,9 +305,14 @@ function check_answer() {
             setTimeout(function () {
                 $(".has-feedback").toggleClass("has-error");
             }, 2000);
+            failed.push(game);
+            var msg = game.country[LANGUAGE] + ' - ' + game.capital[LANGUAGE];
+            $("#listdiv ul").append('<li>' + msg + '</li>');
+
             progress += 1;
         }
     }
+    set_progbar();
 
     if (game_mode === 3) {
         return;
@@ -375,6 +386,7 @@ function goto_rand() {
 }
 
 function start_exhaust() {
+    failed = [];
     bust_on_wrong = false;
     all_capitals = capitals_low.slice(0);  // copy
     shuffleArray(all_capitals);
